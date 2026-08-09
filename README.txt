@@ -1,16 +1,19 @@
-SIYAM — v0.1 PERSONAL PROTOTYPE
+Siyam v0.2
+Fiqh source: Sayyid al-Sistani, Islamic Laws, Ruling 1716.
+This version adds the complete recurring/special day categories from the ruling:
+- first and last Thursday of each month
+- first Wednesday after the 10th
+- 13th, 14th, 15th
+- all of Rajab and Sha'ban
+- Nawruz
+- 4th-9th Shawwal
+- 25th and 29th Dhu al-Qi'dah
+- 1st-9th Dhu al-Hijjah
+- 18th and 24th Dhu al-Hijjah
+- 1st, 3rd, 7th Muharram
+- 17th Rabi al-Awwal
+- 15th Jumada al-Ula
+- 27th Rajab
 
-This is the first working UI/prototype. It contains:
-- Sistani Ruling 1716 fasting rules encoded as data/logic
-- Hijri adjustment -2 to +2
-- Today/next fast display
-- Home-screen web-app manifest
-- Notification permission hook
-
-Important:
-The current prototype does NOT yet send scheduled remote push notifications. That requires a hosted push endpoint/server. We will add that after the calendar logic is validated.
-
-Source:
-https://www.sistani.org/english/book/48/2299/
-
-The app deliberately treats the calculated Hijri date as a baseline and lets the user apply an offset. The offset is not a substitute for determining the start of a lunar month.
+Note: Nawruz requires a separate solar/equinox date calculation and is intentionally not hard-coded in this prototype.
+The Hijri offset is user-controlled and applies to the date logic.
