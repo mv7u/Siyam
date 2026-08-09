@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#f7f3ed">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon.svg">
+<title>Siyam</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<main>
+  <header><div class="brand">Siyam</div><div class="subtitle">Mustahabb fasting · Sistani</div></header>
+  <section class="card hero">
+    <div class="label">TODAY</div>
+    <div id="todayHijri" class="big">Loading…</div>
+    <div id="todayStatus"></div>
+  </section>
+  <section class="card">
+    <div class="label">NEXT FAST</div>
+    <div id="nextFast" class="next">Loading…</div>
+    <button id="notifyBtn">Enable fasting reminders</button>
+    <div class="small">Reminder: 8:00 PM the evening before</div>
+  </section>
+  <section class="card">
+    <div class="row"><strong>Hijri adjustment</strong><span id="offsetLabel">0 days</span></div>
+    <input id="offset" type="range" min="-2" max="2" step="1" value="0">
+    <div class="ticks"><span>-2</span><span>-1</span><span>0</span><span>+1</span><span>+2</span></div>
+    <div class="small">Use this when your locally established Hijri date differs from the calculated date.</div>
+  </section>
+  <section class="card">
+    <div class="label">ABOUT</div>
+    <p>Siyam is a private reminder tool for recommended fasting days based on Ruling 1716 on the official website of Sayyid Ali al-Sistani.</p>
+    <p class="small">The Hijri adjustment changes the date used by the app; it does not determine the beginning of a lunar month.</p>
+  </section>
+</main>
+<script src="app.js"></script>
+</body>
+</html>
