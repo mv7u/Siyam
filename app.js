@@ -1,53 +1,622 @@
-const MONTHS=["Muharram","Safar","Rabi al-Awwal","Rabi al-Thani","Jumada al-Ula","Jumada al-Thaniyah","Rajab","Sha'ban","Ramadan","Shawwal","Dhu al-Qi'dah","Dhu al-Hijjah"];
-const offsetEl=document.getElementById("offset"), offsetLabel=document.getElementById("offsetLabel");
-offsetEl.value=localStorage.getItem("hijriOffset")||0;
-function baseline(date){const jd=Math.floor(date.getTime()/86400000)+2440587.5,l=Math.floor(jd-1948439.5+10632),n=Math.floor((l-1)/10631),ll=l-10631*n+354,j=Math.floor((10985-ll)/5316)*Math.floor(50*ll/17719)+Math.floor(ll/5670)*Math.floor(43*ll/15238),l2=ll-Math.floor((30-j)/15)*Math.floor(17719*j/50)-Math.floor(j/16)*Math.floor(15238*j/43)+29,m=Math.floor(24*l2/709),d=l2-Math.floor(709*m/24),y=30*n+j-30;return{y,m,d}}
-function adjFromBase(x){let d=x.d+ +offsetEl.value,m=x.m,y=x.y;while(d>30){d-=30;m++;if(m>12){m=1;y++}}while(d<1){m--;if(m<1){m=12;y--}d+=30}return{y,m,d}}
-function hijri(date){return adjFromBase(baseline(date))}
-function key(h){return `${h.d}-${h.m}`}
-const special={
-"1-1":"1 Muharram","3-1":"3 Muharram","7-1":"7 Muharram",
-"17-3":"17 Rabi al-Awwal — birthday of the Prophet (peace be upon him)",
-"15-5":"15 Jumada al-Ula","27-7":"27 Rajab — al-Mab'ath",
-"25-11":"25 Dhu al-Qi'dah","29-11":"29 Dhu al-Qi'dah",
-"18-12":"18 Dhu al-Hijjah — Eid al-Ghadir","24-12":"24 Dhu al-Hijjah — Day of Mubahalah"
+
+const MONTHS = [
+  "Muharram",
+  "Safar",
+  "Rabi al-Awwal",
+  "Rabi al-Thani",
+  "Jumada al-Ula",
+  "Jumada al-Thaniyah",
+  "Rajab",
+  "Sha'ban",
+  "Ramadan",
+  "Shawwal",
+  "Dhu al-Qi'dah",
+  "Dhu al-Hijjah"
+];
+
+const offsetEl = document.getElementById("offset");
+const offsetLabel = document.getElementById("offsetLabel");
+
+offsetEl.value = localStorage.getItem("hijriOffset") || 0;
+
+
+/* -----------------------------
+   HIJRI DATE CALCULATION
+----------------------------- */
+
+function baseline(date) {
+  const jd =
+    Math.floor(date.getTime() / 86400000) + 2440587.5;
+
+  const l =
+    Math.floor(jd - 1948439.5 + 10632);
+
+  const n =
+    Math.floor((l - 1) / 10631);
+
+  const ll =
+    l - 10631 * n + 354;
+
+  const j =
+    Math.floor((10985 - ll) / 5316) *
+      Math.floor((50 * ll) / 17719) +
+    Math.floor(ll / 5670) *
+      Math.floor((43 * ll) / 15238);
+
+  const l2 =
+    ll -
+    Math.floor((30 - j) / 15) *
+      Math.floor((17719 * j) / 50) -
+    Math.floor(j / 16) *
+      Math.floor((15238 * j) / 43) +
+    29;
+
+  const m =
+    Math.floor((24 * l2) / 709);
+
+  const d =
+    l2 -
+    Math.floor((709 * m) / 24);
+
+  const y =
+    30 * n + j - 30;
+
+  return { y, m, d };
+}
+
+
+/* -----------------------------
+   HIJRI +/- 2 DAY ADJUSTMENT
+----------------------------- */
+
+function adjFromBase(x) {
+  let d = x.d + Number(offsetEl.value);
+  let m = x.m;
+  let y = x.y;
+
+  while (d > 30) {
+    d -= 30;
+    m++;
+
+    if (m > 12) {
+      m = 1;
+      y++;
+    }
+  }
+
+  while (d < 1) {
+    m--;
+
+    if (m < 1) {
+      m = 12;
+      y--;
+    }
+
+    d += 30;
+  }
+
+  return { y, m, d };
+}
+
+function hijri(date) {
+  return adjFromBase(baseline(date));
+}
+
+function key(h) {
+  return `${h.d}-${h.m}`;
+}
+
+
+/* -----------------------------
+   SPECIAL FASTING DAYS
+----------------------------- */
+
+const special = {
+
+  "1-1":
+    "1 Muharram",
+
+  "3-1":
+    "3 Muharram",
+
+  "7-1":
+    "7 Muharram",
+
+  "17-3":
+    "17 Rabi al-Awwal — birthday of the Prophet ﷺ",
+
+  "15-5":
+    "15 Jumada al-Ula",
+
+  "27-7":
+    "27 Rajab — al-Mab'ath",
+
+  "25-11":
+    "25 Dhu al-Qi'dah",
+
+  "29-11":
+    "29 Dhu al-Qi'dah",
+
+  "18-12":
+    "18 Dhu al-Hijjah — Eid al-Ghadir",
+
+  "24-12":
+    "24 Dhu al-Hijjah — Day of Mubahalah"
 };
-function reason(h){
- if((h.m===1&&[1,3,7].includes(h.d))||special[key(h)]) return special[key(h)];
- if(h.m===3&&h.d===17)return special["17-3"];
- if(h.m===5&&h.d===15)return special["15-5"];
- if(h.m===7&&h.d===27)return special["27-7"];
- if(h.m===10&&h.d>=4&&h.d<=9)return `${h.d} Shawwal`;
- if(h.m===12&&h.d>=1&&h.d<=9)return h.d===9?"9 Dhu al-Hijjah — Day of Arafah (fasting is disapproved if it prevents reciting its supplications)":`${h.d} Dhu al-Hijjah`;
- if(h.m===12&&[18,24].includes(h.d))return special[key(h)];
- if([13,14,15].includes(h.d))return `${h.d} ${MONTHS[h.m-1]} — Ayyam al-Bid`;
- if(h.m===7||h.m===8)return `Any day of ${MONTHS[h.m-1]} is recommended`;
- return null;
+
+
+/* -----------------------------
+   GREGORIAN DATE
+----------------------------- */
+
+function formatGregorian(date) {
+
+  const months = [
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December"
+  ];
+
+  const days = [
+    "Sunday",
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday",
+    "Saturday"
+  ];
+
+  return `${days[date.getDay()]}, ${months[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;
 }
-function recurringExplanation(date){
- const day=date.getDay(); // Sun 0, Thu 4
- // Need the Hijri day of the date to identify first/last Thursday and first Wed after 10.
- const h=hijri(date);
- if(day===4 && h.d<=7) return "First Thursday of the Hijri month";
- if(day===4 && h.d>=23) return "Last Thursday of the Hijri month";
- if(day===3 && h.d>=11 && h.d<=17) return "First Wednesday after the 10th of the Hijri month";
- return null;
+
+
+/* -----------------------------
+   HIJRI MONTH COMPARISON
+----------------------------- */
+
+function sameMonth(a, b) {
+  return a.y === b.y && a.m === b.m;
 }
-function reasonAll(date){
- const h=hijri(date);
- const r=reason(h);
- const rr=recurringExplanation(date);
- return [r,rr].filter(Boolean);
+
+
+/* -----------------------------
+   FIRST/LAST THURSDAY
+----------------------------- */
+
+function recurringExplanation(date) {
+
+  const h = hijri(date);
+
+  const day = date.getDay();
+
+  // Thursday = 4
+  if (day === 4) {
+
+    const previousThursday =
+      new Date(date);
+
+    previousThursday.setDate(
+      previousThursday.getDate() - 7
+    );
+
+    const nextThursday =
+      new Date(date);
+
+    nextThursday.setDate(
+      nextThursday.getDate() + 7
+    );
+
+    const previousHijri =
+      hijri(previousThursday);
+
+    const nextHijri =
+      hijri(nextThursday);
+
+    if (!sameMonth(previousHijri, h)) {
+      return "First Thursday of the Hijri month";
+    }
+
+    if (!sameMonth(nextHijri, h)) {
+      return "Last Thursday of the Hijri month";
+    }
+  }
+
+
+  /*
+    First Wednesday after the 10th.
+
+    Wednesday = 3
+  */
+
+  if (day === 3 && h.d > 10) {
+
+    const previousWednesday =
+      new Date(date);
+
+    previousWednesday.setDate(
+      previousWednesday.getDate() - 7
+    );
+
+    const previousHijri =
+      hijri(previousWednesday);
+
+    if (
+      previousHijri.m !== h.m ||
+      previousHijri.d <= 10
+    ) {
+      return "First Wednesday after the 10th of the Hijri month";
+    }
+  }
+
+  return null;
 }
-function render(){
- const h=hijri(new Date()), reasons=reasonAll(new Date());
- document.getElementById("todayHijri").textContent=`${h.d} ${MONTHS[h.m-1]} ${h.y}`;
- document.getElementById("todayStatus").innerHTML=reasons.length?`<span class="must">Mustahabb fast</span><div class="small">${reasons.join(" · ")}</div>`:`<div class="small">No specially emphasized day listed for today.</div>`;
- let next=null;
- for(let i=1;i<=370;i++){const d=new Date();d.setHours(12,0,0,0);d.setDate(d.getDate()+i);const rs=reasonAll(d);if(rs.length){next={d,h:hijri(d),rs};break}}
- document.getElementById("nextFast").textContent=next?`${next.h.d} ${MONTHS[next.h.m-1]} — ${next.rs[0]}`:"No upcoming fast found.";
- document.getElementById("ruleText").textContent=reasons.length?reasons.join(" · "):"Ruling 1716: fasting on any day is recommended apart from unlawful/disapproved days; some days are emphasized more.";
+
+
+/* -----------------------------
+   NAWRUZ
+----------------------------- */
+
+/*
+   Nawrūz follows the spring equinox,
+   not the Hijri calendar.
+
+   This is currently represented as
+   March 20 as a placeholder.
+
+   We will refine the astronomical
+   calculation before enabling
+   automatic religious notifications.
+*/
+
+function isNawruz(date) {
+
+  return (
+    date.getMonth() === 2 &&
+    date.getDate() === 20
+  );
 }
-function setOffset(v){localStorage.setItem("hijriOffset",v);offsetLabel.textContent=(v>0?"+":"")+v+" day"+(Math.abs(v)==1?"":"s");render()}
-offsetEl.addEventListener("input",e=>setOffset(+e.target.value));setOffset(+offsetEl.value);
-document.getElementById("notifyBtn").addEventListener("click",async()=>{if(!("Notification"in window)){alert("Please add Siyam to your iPhone Home Screen first.");return}const p=await Notification.requestPermission();alert(p==="granted"?"Notifications are allowed. Scheduled push reminders are the next build.":"Notifications were not enabled.")});
+
+
+/* -----------------------------
+   FASTING REASONS
+----------------------------- */
+
+function reason(h) {
+
+  if (special[key(h)]) {
+    return special[key(h)];
+  }
+
+
+  // 4–9 Shawwal
+  if (
+    h.m === 10 &&
+    h.d >= 4 &&
+    h.d <= 9
+  ) {
+    return `${h.d} Shawwal`;
+  }
+
+
+  // 1–9 Dhu al-Hijjah
+  if (
+    h.m === 12 &&
+    h.d >= 1 &&
+    h.d <= 9
+  ) {
+
+    if (h.d === 9) {
+
+      return (
+        "9 Dhu al-Hijjah — Day of Arafah " +
+        "(fasting is disapproved if it prevents reciting its supplications)"
+      );
+    }
+
+    return "Dhu al-Hijjah 1–9";
+  }
+
+
+  // Ayyam al-Bid
+  if (
+    h.d === 13 ||
+    h.d === 14 ||
+    h.d === 15
+  ) {
+
+    return (
+      `${h.d} ${MONTHS[h.m - 1]} — Ayyam al-Bid`
+    );
+  }
+
+
+  // Rajab and Sha'ban
+  if (h.m === 7) {
+    return "Any day of Rajab is recommended";
+  }
+
+  if (h.m === 8) {
+    return "Any day of Sha'ban is recommended";
+  }
+
+  return null;
+}
+
+
+/* -----------------------------
+   COMBINE ALL REASONS
+----------------------------- */
+
+function reasonAll(date) {
+
+  const results = [];
+
+  const h = hijri(date);
+
+  const normalReason =
+    reason(h);
+
+  if (normalReason) {
+    results.push(normalReason);
+  }
+
+
+  const recurring =
+    recurringExplanation(date);
+
+  if (recurring) {
+    results.push(recurring);
+  }
+
+
+  if (isNawruz(date)) {
+    results.push(
+      "Nawrūz — spring equinox"
+    );
+  }
+
+
+  return results;
+}
+
+
+/* -----------------------------
+   MAIN SCREEN
+----------------------------- */
+
+function render() {
+
+  const today = new Date();
+
+  const h = hijri(today);
+
+  const reasons =
+    reasonAll(today);
+
+
+  /*
+     TODAY
+  */
+
+  document.getElementById(
+    "todayHijri"
+  ).innerHTML =
+    `${h.d} ${MONTHS[h.m - 1]} ${h.y}
+     <div class="small">
+       ${formatGregorian(today)}
+     </div>`;
+
+
+  /*
+     STATUS
+  */
+
+  if (reasons.length) {
+
+    document.getElementById(
+      "todayStatus"
+    ).innerHTML =
+      `<span class="must">
+        Mustahabb fast
+       </span>
+       <div class="small">
+         ${reasons.join(" · ")}
+       </div>`;
+
+  } else {
+
+    document.getElementById(
+      "todayStatus"
+    ).innerHTML =
+      `<div class="small">
+        No specially emphasized day listed for today.
+       </div>`;
+  }
+
+
+  /*
+     FIND NEXT FAST
+  */
+
+  let nextFast = null;
+
+
+  for (
+    let i = 1;
+    i <= 370;
+    i++
+  ) {
+
+    const futureDate =
+      new Date();
+
+    futureDate.setHours(
+      12,
+      0,
+      0,
+      0
+    );
+
+    futureDate.setDate(
+      futureDate.getDate() + i
+    );
+
+
+    const futureReasons =
+      reasonAll(futureDate);
+
+
+    if (futureReasons.length) {
+
+      nextFast = {
+        date: futureDate,
+        hijri: hijri(futureDate),
+        reasons: futureReasons
+      };
+
+      break;
+    }
+  }
+
+
+  /*
+     DISPLAY NEXT FAST
+  */
+
+  if (nextFast) {
+
+    document.getElementById(
+      "nextFast"
+    ).innerHTML =
+      `${nextFast.hijri.d}
+       ${MONTHS[nextFast.hijri.m - 1]}
+       ${nextFast.hijri.y}
+
+       <div class="small">
+         ${formatGregorian(nextFast.date)}
+       </div>
+
+       <div class="small">
+         ${nextFast.reasons.join(" · ")}
+       </div>`;
+
+  } else {
+
+    document.getElementById(
+      "nextFast"
+    ).textContent =
+      "No upcoming fast found.";
+  }
+
+
+  /*
+     EXPLANATION
+  */
+
+  document.getElementById(
+    "ruleText"
+  ).textContent =
+    reasons.length
+      ? reasons.join(" · ")
+      : "Ruling 1716: fasting on any permissible day is recommended, while certain days are especially emphasized.";
+}
+
+
+/* -----------------------------
+   HIJRI OFFSET
+----------------------------- */
+
+function setOffset(value) {
+
+  localStorage.setItem(
+    "hijriOffset",
+    value
+  );
+
+
+  offsetLabel.textContent =
+    (value > 0 ? "+" : "") +
+    value +
+    " day" +
+    (Math.abs(value) === 1
+      ? ""
+      : "s");
+
+
+  render();
+}
+
+
+offsetEl.addEventListener(
+  "input",
+  event => {
+    setOffset(
+      Number(event.target.value)
+    );
+  }
+);
+
+
+setOffset(
+  Number(offsetEl.value)
+);
+
+
+/* -----------------------------
+   NOTIFICATION PERMISSION
+----------------------------- */
+
+document
+  .getElementById("notifyBtn")
+  .addEventListener(
+    "click",
+    async () => {
+
+      if (!("Notification" in window)) {
+
+        alert(
+          "Please add Siyam to your iPhone Home Screen first."
+        );
+
+        return;
+      }
+
+
+      const permission =
+        await Notification.requestPermission();
+
+
+      if (permission === "granted") {
+
+        alert(
+          "Notifications are allowed. Automatic scheduled reminders will be added in the next build."
+        );
+
+      } else {
+
+        alert(
+          "Notifications were not enabled."
+        );
+      }
+    }
+  );
+""", encoding="utf-8")
+
+zip_path = Path("/mnt/data/Siyam_v0_3.zip")
+with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as z:
+    for f in root.iterdir():
+        z.write(f, f.name)
+
+print(zip_path)
+print([f.name for f in root.iterdir()])
+print(zip_path.stat().st_size)
